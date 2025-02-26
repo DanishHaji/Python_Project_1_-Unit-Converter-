@@ -25,6 +25,8 @@ exchange_rate_api_key = os.getenv("EXCHANGE_RATE_API_KEY")
 
 # Initialize text-to-speech engine
 engine = pyttsx3.init(driverName='sapi5')
+engine.say("Hello, your text-to-speech is working!")
+engine.runAndWait()
 speak_queue: queue.Queue[str] = queue.Queue()
 
 def speak_worker():
