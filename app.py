@@ -8,6 +8,8 @@ from groq import Groq
 import requests
 import pint
 from dotenv import load_dotenv
+from pydub import AudioSegment
+from pydub.playback import play
 
 # Load environment variables
 load_dotenv()
@@ -83,8 +85,9 @@ def convert_currency(amount, from_currency, to_currency):
 
 def voice_input():
     recognizer = sr.Recognizer()
+    st.info("Listening... Speak now!")
+
     with sr.Microphone() as source:
-        st.info("Listening... Speak now!")
         try:
             audio = recognizer.listen(source)
             return recognizer.recognize_google(audio)
@@ -92,7 +95,6 @@ def voice_input():
             return "Sorry, I could not understand the audio."
         except sr.RequestError:
             return "Could not request results."
-        
 
 # Streamlit UI
 st.set_page_config(page_title="AI-Powered Converters", layout="centered")
@@ -102,7 +104,7 @@ st.title("🚀 Universal Converter Pro - Powered by AI 🤖")
 tab1, tab2 = st.tabs(["Unit Conversion", "Currency Converter"])
 
 unit_categories = {
-   "Length": ["meter", "kilometer", "mile", "foot", "inch", "centimeter", "millimeter", "yard", "nautical mile"],
+    "Length": ["meter", "kilometer", "mile", "foot", "inch", "centimeter", "millimeter", "yard", "nautical mile"],
     "Mass/Weight": ["kilogram", "gram", "pound", "ounce", "ton", "stone", "milligram", "microgram"],
     "Volume": ["liter", "milliliter", "gallon", "quart", "pint", "cup", "fluid ounce", "tablespoon", "teaspoon"],
     "Area": ["square meter", "square kilometer", "acre", "hectare", "square foot", "square mile", "square yard", "square inch"],

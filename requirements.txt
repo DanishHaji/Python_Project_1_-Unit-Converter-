@@ -5,4 +5,4 @@ groq
 forex-python
 pint
 python-dotenv
-pyaudio
+pydub  # Alternative for audio processing
