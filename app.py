@@ -1,15 +1,11 @@
 import os
 import streamlit as st
-import speech_recognition as sr
-import pyttsx3
 import queue
 import threading
 from groq import Groq
 import requests
 import pint
 from dotenv import load_dotenv
-from pydub import AudioSegment
-from pydub.playback import play
 
 # Load environment variables
 load_dotenv()
@@ -22,30 +18,6 @@ ureg = pint.UnitRegistry()
 
 # Fetch API Key for Exchange Rates
 exchange_rate_api_key = os.getenv("EXCHANGE_RATE_API_KEY")
-
-# Initialize text-to-speech engine
-engine = pyttsx3.init(driverName='sapi5')
-engine.say("Hello, your text-to-speech is working!")
-engine.runAndWait()
-speak_queue: queue.Queue[str] = queue.Queue()
-
-def speak_worker():
-    """Worker function to process speech tasks from the queue."""
-    while True:
-        text = speak_queue.get()
-        if text is None:  # Exit condition
-            break
-        engine.say(text)
-        engine.runAndWait()
-        speak_queue.task_done()
-
-# Start the speech thread
-speech_thread = threading.Thread(target=speak_worker, daemon=True)
-speech_thread.start()
-
-def speak(text):
-    """Add text to the speech queue."""
-    speak_queue.put(text)
 
 def ai_suggestions(query):
     chat_completion = client.chat.completions.create(
@@ -85,19 +57,6 @@ def convert_currency(amount, from_currency, to_currency):
     except Exception as e:
         return f"Error: {str(e)}"
 
-def voice_input():
-    recognizer = sr.Recognizer()
-    st.info("Listening... Speak now!")
-
-    with sr.Microphone() as source:
-        try:
-            audio = recognizer.listen(source)
-            return recognizer.recognize_google(audio)
-        except sr.UnknownValueError:
-            return "Sorry, I could not understand the audio."
-        except sr.RequestError:
-            return "Could not request results."
-
 # Streamlit UI
 st.set_page_config(page_title="AI-Powered Converters", layout="centered")
 st.title("🚀 Universal Converter Pro - Powered by AI 🤖")
@@ -134,7 +93,6 @@ with tab1:
     if convert_button:
         result = convert_units(value, from_unit, to_unit)
         st.success(f"✅ Result: {result}")
-        speak(f"The result is {result}")
 
 with tab2:
     st.header("💰 Currency Converter")
@@ -148,38 +106,8 @@ with tab2:
     if currency_convert_button:
         result = convert_currency(amount, from_currency, to_currency)
         st.success(f"✅ Converted Amount: {result}")
-        speak(f"The converted amount is {result}")
 
 query = st.text_input("Ask AI about conversions (e.g., 'How much does 5 kg weigh on the Moon?')")
 if st.button("Get AI Suggestion"):
     ai_response = ai_suggestions(query)
     st.info(f"🤖 AI Suggestion: {ai_response}")
-    speak(ai_response)
-
-if st.button("🎤 Speak for Conversion"):
-    spoken_text = voice_input()
-    
-    if spoken_text:
-        st.success(f"🗣️ You said: {spoken_text}")
-        speak(f"You said: {spoken_text}")
-        
-        words = spoken_text.split()
-        if len(words) >= 3 and words[0].lower() == "convert":
-            try:
-                value = float(words[1])
-                from_unit = words[2]
-                to_unit = words[-1]
-                
-                if from_unit.upper() in currencies and to_unit.upper() in currencies:
-                    result = convert_currency(value, from_unit.upper(), to_unit.upper())
-                else:
-                    result = convert_units(value, from_unit, to_unit)
-                
-                st.success(f"✅ Result: {result}")
-                speak(f"The result is {result}")
-            except ValueError:
-                st.warning("Invalid format. Try saying: 'Convert 10 kg to pounds'.")
-        else:
-            ai_response = ai_suggestions(spoken_text)
-            st.info(f"🤖 AI Response: {ai_response}")
-            speak(ai_response)

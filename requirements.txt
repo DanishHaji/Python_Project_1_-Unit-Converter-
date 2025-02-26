@@ -1,8 +1,5 @@
 streamlit
-speechrecognition
-pyttsx3
 groq
 forex-python
 pint
 python-dotenv
-pydub  # Alternative for audio processing
